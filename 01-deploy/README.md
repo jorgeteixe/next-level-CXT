@@ -34,7 +34,6 @@ You can save the variables in a `.tfvars` file and use the `-var-file` argument 
 
 To create and prepare the environment run:
 
-
 1. Inside `10-terraform` directory:
     ```bash
     terraform apply -var-file=".tfvars"
@@ -43,4 +42,13 @@ To create and prepare the environment run:
 2. Inside `20-ansible` directory:
     ```bash
     ansible-playbook -i hosts playbook.yml
+    ```
+
+## Cleanup
+
+To remove everything run:
+
+1. Inside `10-terraform` directory:
+    ```bash
+    terraform destroy -var-file=".tfvars"
     ```

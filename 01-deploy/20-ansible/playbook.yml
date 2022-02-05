@@ -48,6 +48,10 @@
       src: /dev/xvdf1
       state: mounted
       fstype: ext4
+  - name: Delete lost+found folder
+    file:
+      state: absent
+      path: /var/www/html/lost+found
   - name: Clone personal portfolio as default web
     ansible.builtin.git:
       repo: 'https://github.com/jorgeteixe/jorgeteixeira.es.git'

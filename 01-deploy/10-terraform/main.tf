@@ -124,6 +124,8 @@ resource "aws_volume_attachment" "attatchment" {
   device_name = "/dev/sdf"
   volume_id   = aws_ebs_volume.volume.id
   instance_id = aws_instance.instance.id
+  
+  force_detach = true
 }
 
 #
@@ -148,6 +150,10 @@ resource "aws_instance" "instance" {
   availability_zone      = var.availability_zone
   key_name               = aws_key_pair.next-level-cxt.key_name
   vpc_security_group_ids = [aws_security_group.sec_group.id]
+
+  depends_on = [
+    aws_internet_gateway.gw
+  ]
 
   tags = {
     Name = "cxt-01"
