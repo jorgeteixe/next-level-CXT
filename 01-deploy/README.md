@@ -1,4 +1,4 @@
-# Lab 1: Despliegue de Infraestructura
+# Lab 1: Deploy infrastructure
 
 ## Assignment
 
