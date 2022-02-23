@@ -1,4 +1,4 @@
-# Lab 2: Single host monitoring
+# Lab 2: Local monitoring
 
 ## Assignment
 

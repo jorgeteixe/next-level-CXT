@@ -12,3 +12,4 @@ To do the configuration within the instances created, I will use Ansible.
 ## Assignments
 
 1. [Deploy infrastructure and services in AWS](./01-deploy/)
+2. [Local monitoring](./02-local-monitoring)
