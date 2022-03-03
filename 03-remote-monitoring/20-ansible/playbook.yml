@@ -1,0 +1,79 @@
+- name: Update, install and configure required packages
+  hosts: cxt_02
+  become: true
+  tasks:
+  - name: Update all packages to their latest version
+    apt:
+      name: "*"
+      state: latest
+      update_cache: yes
+  - name: Install cpuid
+    apt:
+      name: cpuid
+      state: present
+  - name: Install ncdu
+    apt:
+      name: ncdu
+      state: present
+  - name: Install net-tools
+    apt:
+      name: net-tools
+      state: present
+  - name: Install neofetch
+    apt:
+      name: neofetch
+      state: present
+  - name: Install stress
+    apt:
+      name: stress
+      state: present
+  - name: Install tldr
+    apt:
+      name: tldr
+      state: present
+  - name: Install python3-pip
+    apt:
+      name: python3-pip
+      state: present
+  - name: Install iotop
+    apt:
+      name: iotop
+      state: present
+  - name: Install nethogs
+    apt:
+      name: nethogs
+      state: present
+  - name: Install atop
+    apt:
+      name: atop
+      state: present
+  - name: Install pcp
+    apt:
+      name: pcp
+      state: present
+  - name: Install iftop
+    apt:
+      name: iftop
+      state: present
+  - name: Install glances
+    apt:
+      name: glances
+      state: present
+  - name: Install stress-ng
+    apt:
+      name: stress-ng
+      state: present
+  - name: Install iperf
+    apt:
+      name: iperf
+      state: present
+  - name: Install manly python package
+    pip:
+      name: manly
+  - name: Check if reboot is needed
+    stat:
+      path: /var/run/reboot-required
+    register: stat_result
+  - name: Reboot if needed
+    reboot:
+    when: stat_result.stat.exists
