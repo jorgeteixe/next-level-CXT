@@ -1,5 +1,5 @@
 - name: Update, install and configure required packages
-  hosts: cxt_02
+  hosts: cxt_03
   become: true
   tasks:
   - name: Update all packages to their latest version
@@ -7,69 +7,41 @@
       name: "*"
       state: latest
       update_cache: yes
-  - name: Install cpuid
-    apt:
-      name: cpuid
-      state: present
-  - name: Install ncdu
-    apt:
-      name: ncdu
-      state: present
-  - name: Install net-tools
-    apt:
-      name: net-tools
-      state: present
-  - name: Install neofetch
-    apt:
-      name: neofetch
-      state: present
-  - name: Install stress
-    apt:
-      name: stress
-      state: present
-  - name: Install tldr
-    apt:
-      name: tldr
-      state: present
-  - name: Install python3-pip
-    apt:
-      name: python3-pip
-      state: present
-  - name: Install iotop
-    apt:
-      name: iotop
-      state: present
-  - name: Install nethogs
-    apt:
-      name: nethogs
-      state: present
-  - name: Install atop
-    apt:
-      name: atop
-      state: present
-  - name: Install pcp
-    apt:
-      name: pcp
-      state: present
-  - name: Install iftop
-    apt:
-      name: iftop
-      state: present
   - name: Install glances
     apt:
       name: glances
       state: present
-  - name: Install stress-ng
+  - name: Install sysstat
     apt:
-      name: stress-ng
+      name: sysstat
       state: present
-  - name: Install iperf
+  - name: Enable, start and ensure it is not masked service sysstat
+    ansible.builtin.systemd:
+      name: sysstat
+      enabled: yes
+      state: started
+      masked: no
+  - name: Create a glances config directory
+    ansible.builtin.file:
+      path: /home/ubuntu/.config/glances/
+      state: directory
+      mode: '0755'
+  - name: Creating a glances.conf file
+    copy:
+      dest: /home/ubuntu/.config/glances/glances.conf
+      content: |
+        [opentsdb]
+        host=54.77.161.219
+        port=4242
+        prefix=glances
+        tags=user:TeixeiraCrespo,host:cxt03
+  - name: Install python3-pip
     apt:
-      name: iperf
+      name: python3-pip
       state: present
-  - name: Install manly python package
+  - name: Install potsdb
     pip:
-      name: manly
+      name: potsdb
   - name: Check if reboot is needed
     stat:
       path: /var/run/reboot-required
