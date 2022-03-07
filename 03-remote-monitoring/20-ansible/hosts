@@ -1,2 +1,6 @@
-[cxt_03]
-3.cxt.jtei.io   ansible_user=ubuntu
+[cxt_03a]
+3a.cxt.jtei.io   ansible_user=ubuntu
+
+[cxt_03ab]
+3a.cxt.jtei.io   ansible_user=ubuntu
+3b.cxt.jtei.io   ansible_user=ubuntu

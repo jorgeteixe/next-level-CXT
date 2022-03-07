@@ -90,6 +90,14 @@ resource "aws_security_group" "sec_group" {
     cidr_blocks = ["212.71.255.15/32"]
   }
 
+  ingress {
+    description = "Cockpit 9090"
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port        = 0
     to_port          = 0
@@ -109,10 +117,10 @@ resource "aws_key_pair" "next-level-cxt" {
 }
 
 #
-# Instance
+# Instances
 #
 
-resource "aws_instance" "instance" {
+resource "aws_instance" "instance_a" {
   ami                         = "ami-08ca3fed11864d6bb"
   instance_type               = "t2.micro"
   associate_public_ip_address = true
@@ -127,7 +135,26 @@ resource "aws_instance" "instance" {
   ]
 
   tags = {
-    Name = "cxt-03"
+    Name = "cxt-03a"
+  }
+}
+
+resource "aws_instance" "instance_b" {
+  ami                         = "ami-08ca3fed11864d6bb"
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
+
+  subnet_id              = aws_subnet.subnet.id
+  availability_zone      = var.availability_zone
+  key_name               = aws_key_pair.next-level-cxt.key_name
+  vpc_security_group_ids = [aws_security_group.sec_group.id]
+
+  depends_on = [
+    aws_internet_gateway.gw
+  ]
+
+  tags = {
+    Name = "cxt-03b"
   }
 }
 
@@ -139,22 +166,37 @@ data "aws_route53_zone" "jtei" {
   name = "jtei.io."
 }
 
-resource "aws_route53_record" "dns" {
+resource "aws_route53_record" "dns_a" {
   zone_id = data.aws_route53_zone.jtei.zone_id
-  name    = "3.cxt.jtei.io"
+  name    = "3a.cxt.jtei.io"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.instance.public_ip]
+  records = [aws_instance.instance_a.public_ip]
+}
+
+resource "aws_route53_record" "dns_b" {
+  zone_id = data.aws_route53_zone.jtei.zone_id
+  name    = "3b.cxt.jtei.io"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.instance_b.public_ip]
 }
 
 #
 # Output
 #
 
-output "instance_public_ip" {
-  value = aws_instance.instance.public_ip
+output "instance_a_public_ip" {
+  value = aws_instance.instance_a.public_ip
 }
 
-output "instance_dns_name" {
-  value = aws_route53_record.dns.name
+output "instance_b_public_ip" {
+  value = aws_instance.instance_b.public_ip
+}
+
+output "instance_a_dns_name" {
+  value = aws_route53_record.dns_a.name
+}
+output "instance_b_dns_name" {
+  value = aws_route53_record.dns_b.name
 }
