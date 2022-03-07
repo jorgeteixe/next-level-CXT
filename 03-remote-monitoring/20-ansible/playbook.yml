@@ -66,3 +66,4 @@
   - name: Generate an OpenSSH keypair with the default values (4096 bits, rsa)
     community.crypto.openssh_keypair:
       path: /home/ubuntu/.ssh/id_rsa
+      passphrase: thisisunsafe

@@ -83,11 +83,11 @@ resource "aws_security_group" "sec_group" {
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
-    description = "SSH from VPS"
+    description = "SSH from VPS and local net"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["212.71.255.15/32"]
+    cidr_blocks = ["212.71.255.15/32", "172.20.0.0/24"]
   }
 
   ingress {
