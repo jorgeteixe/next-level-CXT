@@ -1,0 +1,113 @@
+- name: Install and configure apache2
+  hosts: cxt_04
+  become: true
+  tasks:
+  - name: Update all packages to their latest version
+    apt:
+      name: "*"
+      state: latest
+      update_cache: yes
+  - name: Install apache latest version
+    apt:
+      name: apache2
+      state: present
+      update_cache: yes
+  - name: Check if reboot is needed
+    stat:
+      path: /var/run/reboot-required
+    register: stat_result
+  - name: Reboot if needed
+    reboot:
+    when: stat_result.stat.exists
+  - name: Stop apache2
+    service:
+      name: apache2
+      state: stopped
+  - name: Delete default web
+    file:
+      state: absent
+      path: /var/www/html/
+
+- name: Partition, format, mount and use disk.
+  hosts: cxt_04
+  become: true
+  tasks:
+  - name: Create a new ext4 primary partition
+    community.general.parted:
+      device: /dev/xvdf
+      number: 1
+      state: present
+      fs_type: ext4
+  - name: Create a ext4 filesystem on /dev/xvdf1
+    community.general.filesystem:
+      fstype: ext4
+      dev: /dev/xvdf1
+  - name: Mount disk as default web
+    ansible.posix.mount:
+      path: /var/www/html
+      src: /dev/xvdf1
+      state: mounted
+      fstype: ext4
+  - name: Delete lost+found folder
+    file:
+      state: absent
+      path: /var/www/html/lost+found
+  - name: Clone personal portfolio as default web
+    ansible.builtin.git:
+      repo: 'https://github.com/jorgeteixe/jorgeteixeira.es.git'
+      dest: /var/www/html
+      depth: 1
+  - name: Delete .git folder
+    file:
+      state: absent
+      path: /var/www/html/.git
+  - name: Start apache with mounted default web
+    service:
+      name: apache2
+      state: started
+
+- name: Install lab4 required packages.
+  hosts: cxt_04
+  become: true
+  tasks:
+  - name: Install msmtp
+    apt:
+      name: msmtp
+      state: present
+      update_cache: yes
+  - name: Install msmtp-mta
+    apt:
+      name: msmtp-mta
+      state: present
+      update_cache: yes
+  - name: Creating a .msmtprc file
+    copy:
+      dest: /home/ubuntu/.msmtprc
+      content: |
+        defaults
+
+        auth on
+        tls on
+        tls_trust_file /etc/ssl/certs/ca-certificates.crt
+        logfile /var/log/msmtp
+
+        account ses
+        host email-smtp.eu-west-1.amazonaws.com
+        port 587
+        auth on
+        user $SMTP_USERNAME
+        password $SMTP_PASSWORD
+        from cxt04@jorgeteixeira.es
+
+        account default : ses
+  - name: Change permissions
+    ansible.builtin.file:
+      path: /home/ubuntu/.msmtprc
+      mode: '0400'
+  - name: Create a msmtp log file
+    ansible.builtin.file:
+      path: /var/log/msmtp
+      state: touch
+      mode: '0666'
+      owner: msmtp
+      group: ubuntu
