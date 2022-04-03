@@ -1,1 +1,1 @@
-# Lab 5: Availability and data sharing
+# Lab 6: Availability and data sharing
