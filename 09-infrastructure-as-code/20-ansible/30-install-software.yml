@@ -1,0 +1,41 @@
+---
+- name: Install several programs
+  hosts: cxt
+  become: yes
+  remote_user: ubuntu
+
+  tasks:
+    - name: Install apache2, the latest version
+      ansible.builtin.apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+
+    - name: Install a list of programs
+      apt:
+        pkg:
+          - atop
+          - htop
+          - glances
+          - python3-pip
+
+    - name: Install potsdb python package
+      pip:
+        name: potsdb
+
+    - name: Add the deadsnakes (previous and next Python versions) repository from PPA and install its signing key on Ubuntu target
+      ansible.builtin.apt_repository:
+        repo: ppa:deadsnakes/ppa
+
+    - name: Install a specific version of Python
+      apt:
+        name: python3.9
+        update_cache: yes
+
+    - name: Remove useless packages from the cache
+      apt:
+        autoclean: yes
+
+    - name: Remove dependencies that are no longer required
+      apt:
+        autoremove: yes

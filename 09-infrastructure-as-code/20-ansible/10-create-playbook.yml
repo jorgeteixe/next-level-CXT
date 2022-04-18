@@ -1,0 +1,30 @@
+- name: Create swap
+  hosts: cxt
+  remote_user: ubuntu
+  become: True
+
+  tasks:
+    - name: Check whether swap is already enabled or not
+      shell: cat /proc/swaps
+      register: swap_enabled
+
+    - block:
+        - name: create swap file
+          command: dd if=/dev/zero of=/swapfile bs=1M count=1024
+
+        - name: change permission type
+          file: path=/swapfile mode=600 state=file
+
+        - name: setup swap
+          command: mkswap /swapfile
+
+        - name: create swap
+          command: swapon /swapfile
+
+        - name: Add to fstab
+          action: lineinfile dest=/etc/fstab regexp="swapfile" line="/swapfile none swap sw 0 0" state=present
+
+        - name: start swap
+          command: swapon -a
+
+      when: swap_enabled.stdout.find('/swapfile') == -1

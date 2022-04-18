@@ -1,0 +1,38 @@
+---
+- name: Configure and start glances (monitor mode)
+  hosts: cxt
+  remote_user: ubuntu
+
+  tasks:
+    - name: Create the glances config directory
+      ansible.builtin.file:
+        path: /home/ubuntu/.config/glances/
+        state: directory
+        mode: "0755"
+
+    - name: Copy config file with owner and permissions
+      ansible.builtin.copy:
+        dest: /home/ubuntu/.config/glances/glances.conf
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+        content: |
+          [opentsdb]
+          host=193.144.50.38
+          port=5723
+          prefix=glances
+          tags=user:TeixeiraCrespo,host:cxt03
+
+    - name: Check if the session with glances running exists
+      ansible.builtin.command: tmux has-session -t "glances"
+      register: result
+      ignore_errors: true
+
+    - name: Kill any glances tmux session
+      ansible.builtin.command: tmux kill-session -t "glances"
+      when: result is succeeded
+
+    - name: Start a tmux and run glances in monitor (export) mode
+      shell:
+        cmd: tmux has-session -t glances || tmux new-session -d -s "glances" "glances --export opentsdb --time 5"
+        chdir: /home/ubuntu
