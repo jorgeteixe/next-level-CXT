@@ -1,0 +1,3 @@
+[cxt_10]
+instance0.10.cxt.jtei.io   ansible_user=ubuntu
+instance1.10.cxt.jtei.io   ansible_user=ubuntu

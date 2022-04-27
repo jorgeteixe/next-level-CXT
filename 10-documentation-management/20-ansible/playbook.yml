@@ -1,0 +1,49 @@
+- name: Update and upgrade, reboot if needed
+  hosts: cxt_10
+  become: true
+  tasks:
+    - name: Update all packages to their latest version
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+    - name: Check if reboot is needed
+      stat:
+        path: /var/run/reboot-required
+      register: stat_result
+    - name: Reboot if needed
+      reboot:
+      when: stat_result.stat.exists
+
+- name: Install nginx
+  hosts: cxt_10
+  become: true
+  tasks:
+    - name: Install nginx latest version
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+    - name: Create a docs directory
+      ansible.builtin.file:
+        path: /var/www/html/docs
+        state: directory
+        mode: "0755"
+        owner: ubuntu
+        group: ubuntu
+    - name: Configure nginx site on primary host
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          location /secondary/web/ {
+              proxy_pass http://172.20.0.197:80;
+              rewrite ^/secondary/web/(.*) /$1 break;
+          }
+        run_once: true
+        delegate_to: instance0.10.cxt.jtei.io
+    - name: Restart service nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+        run_once: true
+        delegate_to: instance0.10.cxt.jtei.io
