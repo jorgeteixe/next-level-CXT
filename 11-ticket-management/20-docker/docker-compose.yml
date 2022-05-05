@@ -1,0 +1,61 @@
+version: '3.5'
+
+services:
+  # database
+  db:
+    container_name: hesk_db
+    image: mysql:5.7
+    platform: linux/amd64
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - hesk_data:/var/lib/mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?err}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?err}
+      MYSQL_USER: ${MYSQL_USER:?err}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?err}
+    networks:
+      hesk:
+        aliases:
+          - db
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+  # hesk
+  hesk:
+    container_name: hesk_php
+    platform: linux/amd64
+    build:
+      context: .
+    restart: unless-stopped
+    networks:
+      hesk:
+        aliases:
+          - hesk
+  # caddy
+  caddy:
+    container_name: hesk_caddy
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      hesk:
+        aliases:
+          - caddy
+
+networks:
+  hesk:
+    name: hesk
+
+volumes:
+  hesk_data:
+    name:
+      hesk_data
